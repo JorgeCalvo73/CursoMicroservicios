@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -37,24 +38,38 @@ public class CustomerRestController {
     }
     
     @GetMapping("/{id}")
-    public Customer get(@PathVariable String id) {
-        return null;
+    public Customer get(@PathVariable long id) {
+        return customerRepository.findById(id).get();
     }
     
     @PutMapping("/{id}")
-    public ResponseEntity<?> put(@PathVariable String id, @RequestBody Customer input) {
-        return null;
+    public ResponseEntity<?> put(@PathVariable long id, @RequestBody Customer input) {
+         Customer find = customerRepository.findById(id).get();   
+        if(find != null){     
+            find.setCode(input.getCode());
+            find.setName(input.getName());
+            find.setIban(input.getIban());
+            find.setPhone(input.getPhone());
+            find.setSurname(input.getSurname());
+        }
+        Customer save = customerRepository.save(find);
+           return ResponseEntity.ok(save);
     }
     
     @PostMapping
     public ResponseEntity<?> post(@RequestBody Customer input) {
+        input.getProducts().forEach(x -> x.setCustomer(input));
         Customer save = customerRepository.save(input);
         return ResponseEntity.ok(save);
     }
     
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> delete(@PathVariable String id) {
-        return null;
+    public ResponseEntity<?> delete(@PathVariable long id) {
+          Optional<Customer> findById = customerRepository.findById(id);   
+        if(findById.get() != null){               
+                  customerRepository.delete(findById.get());  
+        }
+        return ResponseEntity.ok().build();
     }
     
 }
